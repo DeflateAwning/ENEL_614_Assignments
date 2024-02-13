@@ -9,6 +9,7 @@
 #include "xc.h"
 #include "clock.h"
 #include "uart.h"
+#include "timer.h"
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -23,9 +24,7 @@
 #pragma config POSCMOD = NONE  // Primary oscillator mode is disabled
 
 int main(void) {
-    
-     
-    //Clock output on REFO
+    // Clock output on REFO
     TRISBbits.TRISB15 = 0;  // Set RB15 as output for REFO (DIP PIN 18)
     REFOCONbits.ROEN = 1; // Ref oscillator is enabled
     REFOCONbits.ROSSLP = 0; // Ref oscillator is disabled in sleep
@@ -36,15 +35,23 @@ int main(void) {
     //set_clock_freq(32); // 32 kHz => 300 Baud
     //set_clock_freq(500); // 500 kHz => 4800 Baud
     
-    InitUART2();
-    
+//    InitUART2(); // FIXME: re-enable if used
     
     // Set LED as Output
     TRISBbits.TRISB8 = 0;
-    LATBbits.LATB8 = 0; // turn LED on
+    LATBbits.LATB8 = 0; // set init LED state
+    
+//    while(1) {} // pause forever
     
     uint16_t loop_count = 0;
     
+    while (1) {
+        LATBbits.LATB8 = 1; // turn LED on
+        delay_us(250);
+        LATBbits.LATB8 = 0; // turn LED off
+        delay_us(250);
+    }
+
     while(1) {
         char test_msg[255];
         sprintf(
