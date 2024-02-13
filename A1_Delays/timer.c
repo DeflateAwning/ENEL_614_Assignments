@@ -16,10 +16,12 @@
 volatile uint8_t is_tmr2_isr_serviced_yet = 0;
 
 void delay_us(uint16_t delay_time_us) {
+    // NOTE: delay_us requires that the clock be set to 8 MHz
+
     is_tmr2_isr_serviced_yet = 0;
-    uint16_t orig_active_clk_freq_khz = active_clk_freq_khz;
 
     // Configure clock: must be 8 MHz for us delays
+    // uint16_t orig_active_clk_freq_khz = active_clk_freq_khz;
     // set_clock_freq(8000); // 8 MHz
 
     // region T2CON Configuration
@@ -62,16 +64,22 @@ void delay_us(uint16_t delay_time_us) {
         Idle();
     }
 
-    if (orig_active_clk_freq_khz != active_clk_freq_khz) {
-        set_clock_freq(orig_active_clk_freq_khz);
-    }
+    // if (orig_active_clk_freq_khz != active_clk_freq_khz) {
+    //     set_clock_freq(orig_active_clk_freq_khz);
+    // }
 }
 
 void delay_ms(uint16_t delay_time_ms) {
     is_tmr2_isr_serviced_yet = 0;
 
+    // store orig clock, prevent overflow
     uint16_t orig_active_clk_freq_khz = active_clk_freq_khz;
-    // set_clock_freq(500);
+    if ((active_clk_freq_khz >= 500) && (delay_time_ms > 200)) {
+        set_clock_freq(32);
+    }
+    else if (active_clk_freq_khz == 8000) {
+        set_clock_freq(500);
+    }
 
     // region T2CON Configuration
     // start 16-bit Timer2
