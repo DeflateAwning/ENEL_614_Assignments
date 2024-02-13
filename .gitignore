@@ -1,3 +1,25 @@
+## Files for PIC (Manually added)
+# **/.generated_files/
+
+## Files for PIC (Auto-Added)
+# /A1_Delays/dist/
+# /A1_Delays/build/
+
+## Files from https://forum.microchip.com/s/topic/a5C3l000000MPTyEAO/t328014
+**/.generated_files
+**/build
+**/debug
+**/dist
+**/motorbench
+**/nbproject/Makefile-*
+**/nbproject/Package-*
+**/nbproject/private/
+
+## Notes:
+# These files will be kept:
+# * nbproject/configurations.xml
+# * nbproject/project.xml
+
 # Prerequisites
 *.d
 
