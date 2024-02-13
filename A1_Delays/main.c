@@ -31,9 +31,9 @@ int main(void) {
     REFOCONbits.ROSEL = 0; // Output base clk showing clock switching
     REFOCONbits.RODIV = 0b0000;
 
-    set_clock_freq(8000); // 8000 kHz => 9600 Baud
+    // set_clock_freq(8000); // 8000 kHz => 9600 Baud
     //set_clock_freq(32); // 32 kHz => 300 Baud
-    //set_clock_freq(500); // 500 kHz => 4800 Baud
+    set_clock_freq(500); // 500 kHz => 4800 Baud
     
 //    InitUART2(); // FIXME: re-enable if used
     
@@ -47,9 +47,9 @@ int main(void) {
     
     while (1) {
         LATBbits.LATB8 = 1; // turn LED on
-        delay_us(250);
+        delay_sec(1);
         LATBbits.LATB8 = 0; // turn LED off
-        delay_us(250);
+        delay_sec(4);
     }
 
     while(1) {
