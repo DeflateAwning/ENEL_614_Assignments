@@ -48,15 +48,3 @@ void set_clock_freq(uint16_t clk_freq_khz)
     // set global store
     active_clk_freq_khz = clk_freq_khz;
 }
-
-void delay_us(uint16_t delay_time_us) {
-    
-}
-
-void delay_ms(uint16_t delay_time_ms) {
-    
-}
-
-void delay_sec(uint16_t delay_time_sec) {
-    
-}

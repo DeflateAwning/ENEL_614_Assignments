@@ -5,8 +5,8 @@
  * Created on November 19, 2016, 9:22 PM
  */
 
-#ifndef UART2_H
-#define	UART2_H
+#ifndef __INCLUDE_GUARD_UART2_H__
+#define	__INCLUDE_GUARD_UART2_H__
 
 #ifdef	__cplusplus
 extern "C" {
@@ -30,5 +30,5 @@ void Disp2Hex32(unsigned long int);
 void Disp2String(char*);
 void Disp2Dec(unsigned int);
 
-#endif	/* UART2_H */
+#endif	/* __INCLUDE_GUARD_UART2_H__ */
 

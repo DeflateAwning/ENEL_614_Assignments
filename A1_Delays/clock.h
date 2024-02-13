@@ -28,8 +28,8 @@
 
 // This is a guard condition so that contents of this file are not included
 // more than once.  
-#ifndef XC_HEADER_TEMPLATE_H
-#define	XC_HEADER_TEMPLATE_H
+#ifndef __INCLUDE_GUARD_CLOCK_H__
+#define	__INCLUDE_GUARD_CLOCK_H__
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 #include <stdint.h>
@@ -48,8 +48,4 @@ extern "C" {
 
 void set_clock_freq(uint16_t clk_freq_khz);
 
-void delay_us(uint16_t delay_time_us);
-void delay_ms(uint16_t delay_time_ms);
-void delay_sec(uint16_t delay_time_sec);
-
-#endif	/* XC_HEADER_TEMPLATE_H */
+#endif	/* __INCLUDE_GUARD_CLOCK_H__ */

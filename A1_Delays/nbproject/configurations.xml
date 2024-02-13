@@ -18,6 +18,8 @@
       <itemPath>main.h</itemPath>
       <itemPath>uart.c</itemPath>
       <itemPath>uart.h</itemPath>
+      <itemPath>timer.c</itemPath>
+      <itemPath>timer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -330,6 +332,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-2bff"/>
         <property key="poweroptions.powerenable" value="true"/>
+        <property key="programmerToGoFilePath"
+                  value="/home/user/GitHub/ENEL_614_Assignments/ENEL_614_Assignments/A1_Delays/debug/default/default_ptg"/>
         <property key="programmerToGoImageName" value="default_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
