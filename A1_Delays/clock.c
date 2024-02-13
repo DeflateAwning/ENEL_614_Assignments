@@ -9,6 +9,9 @@
 #include "xc.h"
 #include "clock.h"
 
+// set global store
+uint16_t active_clk_freq_khz = 8000;
+
 //clk_freq_khz = 8000 for 8MHz;
 //clk_freq_khz = 500 for 500kHz;
 //clk_freq_khz = 32 for 32kHz;
@@ -23,7 +26,7 @@ void set_clock_freq(uint16_t clk_freq_khz)
     {
         COSCNOSC = 0x66;
     }
-    else if (clk_freq_khz == 32) //32 kHz
+    else if (clk_freq_khz == 32) // 32 kHz
     {
         COSCNOSC = 0x55;
     }
@@ -41,4 +44,19 @@ void set_clock_freq(uint16_t clk_freq_khz)
      while(OSCCONbits.OSWEN==1)
      {} 
      SRbits.IPL = 0;  //enable interrupts
+
+    // set global store
+    active_clk_freq_khz = clk_freq_khz;
+}
+
+void delay_us(uint16_t delay_time_us) {
+    
+}
+
+void delay_ms(uint16_t delay_time_ms) {
+    
+}
+
+void delay_sec(uint16_t delay_time_sec) {
+    
 }

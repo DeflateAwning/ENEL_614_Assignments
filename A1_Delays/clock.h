@@ -34,35 +34,6 @@
 #include <xc.h> // include processor files - each processor file is guarded.  
 #include <stdint.h>
 
-// TODO Insert appropriate #include <>
-
-// TODO Insert C++ class definitions if appropriate
-
-// TODO Insert declarations
-
-// Comment a function and leverage automatic documentation with slash star star
-/**
-    <p><b>Function prototype:</b></p>
-  
-    <p><b>Summary:</b></p>
-
-    <p><b>Description:</b></p>
-
-    <p><b>Precondition:</b></p>
-
-    <p><b>Parameters:</b></p>
-
-    <p><b>Returns:</b></p>
-
-    <p><b>Example:</b></p>
-    <code>
- 
-    </code>
-
-    <p><b>Remarks:</b></p>
- */
-// TODO Insert declarations or function prototypes (right here) to leverage 
-// live documentation
 
 #ifdef	__cplusplus
 extern "C" {
@@ -77,5 +48,8 @@ extern "C" {
 
 void set_clock_freq(uint16_t clk_freq_khz);
 
-#endif	/* XC_HEADER_TEMPLATE_H */
+void delay_us(uint16_t delay_time_us);
+void delay_ms(uint16_t delay_time_ms);
+void delay_sec(uint16_t delay_time_sec);
 
+#endif	/* XC_HEADER_TEMPLATE_H */
