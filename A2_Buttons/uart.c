@@ -213,10 +213,9 @@ void Disp2String(char *str) //Displays String of characters
     unsigned int i;
    // XmitUART2(0x0A,2);  //LF
    // XmitUART2(0x0D,1);  //CR 
-    for (i=0; i<= strlen(str); i++)
+    for (i=0; i <= strlen(str); i++)
     {
-          
-        XmitUART2(str[i],1);
+        XmitUART2(str[i], 1);
     }
     // XmitUART2(0x0A,2);  //LF
     // XmitUART2(0x0D,1);  //CR 

@@ -46,6 +46,7 @@ void cn_init(void);
 
 uint8_t is_any_sw_pressed(void);
 uint8_t is_sw_pressed(PIN_NAME_t pin);
+uint8_t sw_state_as_int(void);
 
 
 #endif	/* __IO_H_INCLUDE_GUARD_H__ */

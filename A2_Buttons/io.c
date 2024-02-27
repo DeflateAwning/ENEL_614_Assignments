@@ -61,6 +61,16 @@ char* pin_name_to_string(PIN_NAME_t pin) {
     }
 }
 
+uint8_t sw_state_as_int(void) {
+    uint8_t val = 0;
+    for (uint8_t i = 0; i < (sizeof(input_states) / sizeof(input_states[0])); i++) {
+        if (input_states[i]) {
+            val |= (input_states[i] << i);
+        }
+    }
+    return val;
+}
+
 
 ///// Change of pin Interrupt subroutine
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void) {
