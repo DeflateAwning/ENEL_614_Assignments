@@ -27,9 +27,9 @@ int main(void) {
     
     AD1PCFG = 0xFFFF; // disable analog inputs (incl. Pin 7)
 
-     set_clock_freq(8000); // 8000 kHz => 9600 Baud
-    // set_clock_freq(32); // 32 kHz => 300 Baud
-//     set_clock_freq(500); // 500 kHz => 4800 Baud
+//     set_clock_freq(8000); // 8000 kHz => 9600 Baud
+//     set_clock_freq(32); // 32 kHz => 300 Baud
+     set_clock_freq(500); // 500 kHz => 4800 Baud
 //    set_clock_freq(32);
     
     InitUART2();
@@ -38,7 +38,7 @@ int main(void) {
     TRISBbits.TRISB8 = 0;
     LATBbits.LATB8 = 1; // set init LED state
     
-    delay_sec(1);
+    delay_ms(1000);
     
     init_io_inputs();
     cn_init();
@@ -64,7 +64,7 @@ int main(void) {
     
     while (1) {
         if (ENABLE_DEBUG)
-        Disp2String("DEBUG: Top of while(1)\n");
+            Disp2String("DEBUG: Top of while(1)\n");
         
 //        LATBbits.LATB8 = 1; // turn LED on
 //        delay_ms(500);
@@ -76,56 +76,68 @@ int main(void) {
         
         uint8_t cur_sw_state = sw_state_as_int();
         
-        if ((cur_sw_state != last_sw_state) && (is_any_sw_pressed())) {
+        char msg[255];
+        msg[0] = 0; // clear str
+        
+        if ((cur_sw_state != last_sw_state)) {
+            // debouncing delay
+            delay_ms(75);
+            
             uint8_t pressed_sw_count = 0;
             
             if (is_sw_pressed(PIN_RA4_CN0)) {
-                Disp2String("CN0/RA4 ");
+                strcat(msg + strlen(msg), "CN0/RA4 ");
                 pressed_sw_count++;
             }
             if (is_sw_pressed(PIN_RB4_CN1)) {
                 if (pressed_sw_count > 0)
-                    Disp2String("and ");
-                Disp2String("CN1/RB4 ");
+                    strcat(msg + strlen(msg), "and ");
+                strcat(msg + strlen(msg), "CN1/RB4 ");
                 pressed_sw_count++;
             }
             if (is_sw_pressed(PIN_RA2_CN30)) {
                 if (pressed_sw_count > 0)
-                    Disp2String("and ");
-                Disp2String("RA2/CN30 ");
+                    strcat(msg + strlen(msg), "and ");
+                strcat(msg + strlen(msg), "RA2/CN30 ");
                 pressed_sw_count++;
             }
             
             if (pressed_sw_count > 1) {
-                Disp2String("are pressed.\n");
+                strcat(msg + strlen(msg), "are pressed.\n");
             }
             else if (pressed_sw_count == 1) {
-                Disp2String("is pressed.\n");
+                strcat(msg + strlen(msg), "is pressed.\n");
             }
             else {
-                Disp2String("ERROR!\n");
+                // do nothing, pressed_sw_count = 0
             }
             
-            // debouncing delay
-            delay_ms(100);
+            
+            
+            if (ENABLE_DEBUG) {
+                char test_msg[255];
+                sprintf(
+                        test_msg,
+                        "DEBUG: loop=%d, PIN_RA4_CN0=%d, PIN_RB4_CN1=%d, PIN_RA2_CN30=%d, last_sw_state=%d, cur_sw_state=%d\n",
+                        loop_count++,
+                        is_sw_pressed(PIN_RA4_CN0),
+                        is_sw_pressed(PIN_RB4_CN1),
+                        is_sw_pressed(PIN_RA2_CN30),
+                        last_sw_state,
+                        cur_sw_state
+                );
+                Disp2String(test_msg);
+            }
+
+            // set the last state to the state now, after debouncing
+            // (because if the user pressed 2 buttons, must recheck which buttons are settled on)
+            last_sw_state = sw_state_as_int();
         }
         
-        if (ENABLE_DEBUG) {
-            char test_msg[255];
-            sprintf(
-                    test_msg,
-                    "DEBUG: loop=%d, PIN_RA4_CN0=%d, PIN_RB4_CN1=%d, PIN_RA2_CN30=%d, last_sw_state=%d, cur_sw_state=%d\n",
-                    loop_count++,
-                    is_sw_pressed(PIN_RA4_CN0),
-                    is_sw_pressed(PIN_RB4_CN1),
-                    is_sw_pressed(PIN_RA2_CN30),
-                    last_sw_state,
-                    cur_sw_state
-            );
-            Disp2String(test_msg);
+        if (strlen(msg) > 2) {
+            Disp2String(msg);
         }
         
-        last_sw_state = cur_sw_state;
     }
     
     return 0;
