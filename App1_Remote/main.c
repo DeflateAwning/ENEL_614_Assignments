@@ -4,6 +4,7 @@
 #include "uart.h"
 #include "timer.h"
 #include "io.h"
+#include "ir_transmit.h"
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -17,6 +18,11 @@
 #pragma config OSCIOFNC = ON  // CLKO output disabled on pin 8, use as IO. 
 #pragma config POSCMOD = NONE  // Primary oscillator mode is disabled
 
+typedef enum {
+    VOL_CH_MODE_VOLUME,
+    VOL_CH_MODE_CHANNEL
+} VOL_CH_MODE_t;
+
 int main(void) {
     // Clock output on REFO
     TRISBbits.TRISB15 = 0;  // Set RB15 as output for REFO (DIP PIN 18)
@@ -27,9 +33,12 @@ int main(void) {
     
     AD1PCFG = 0xFFFF; // disable analog inputs (incl. Pin 7)
 
-//     set_clock_freq(8000); // 8000 kHz => 9600 Baud
+     set_clock_freq(8000); // 8000 kHz => 9600 Baud
+     // at 8MHz, each clock period is 1.25e-7 sec = 0.125 us
+     
+     // Other options (won't work):
 //     set_clock_freq(32); // 32 kHz => 300 Baud
-     set_clock_freq(500); // 500 kHz => 4800 Baud
+//     set_clock_freq(500); // 500 kHz => 4800 Baud
 //    set_clock_freq(32);
     
     InitUART2();
@@ -62,6 +71,11 @@ int main(void) {
     if (ENABLE_DEBUG)
     Disp2String("DEBUG: Starting while(1)\n");
     
+    const uint32_t DEBOUNCE_DELAY_MS = 75;
+    const uint32_t LOOP_DELAY_MS = 75;
+    uint32_t ms_count_1_and_2_pressed = 0;
+    VOL_CH_MODE_t vol_ch_mode = VOL_CH_MODE_VOLUME;
+    
     while (1) {
         if (ENABLE_DEBUG)
             Disp2String("DEBUG: Top of while(1)\n");
@@ -79,9 +93,13 @@ int main(void) {
         char msg[255];
         msg[0] = 0; // clear str
         
+        // Let PB1 = PIN_RA4_CN0
+        // Let PB2 = PIN_RB4_CN1
+        
+        
         if ((cur_sw_state != last_sw_state)) {
             // debouncing delay
-            delay_ms(75);
+            delay_ms(DEBOUNCE_DELAY_MS);
             
             uint8_t pressed_sw_count = 0;
             
@@ -112,7 +130,58 @@ int main(void) {
                 // do nothing, pressed_sw_count = 0
             }
             
+            if (((last_sw_state & 0b110) > 0) && (cur_sw_state == 0)) {
+                // if PB1 and PB2 were both pressed last time, and now no switches are pressed
+                
+                if (ms_count_1_and_2_pressed > 3000) {
+                    Disp2String("PB1 and PB2 for >3 sec - POWER\n");
+                    
+                    ir_tx_32_bit_code(IR_CODE_POWER_ON_OFF);
+                }
+                
+                else {
+                    // <3sec press, so toggle the mode
+                    if (vol_ch_mode == VOL_CH_MODE_CHANNEL) {
+                        vol_ch_mode = VOL_CH_MODE_VOLUME;
+                        Disp2String("Switched to VOLUME mode.\n");
+                    }
+                    else if (vol_ch_mode == VOL_CH_MODE_VOLUME) {
+                        vol_ch_mode = VOL_CH_MODE_CHANNEL;
+                        Disp2String("Switched to CHANNEL mode.\n");
+                    }
+                    else {
+                        // safe default
+                        vol_ch_mode = VOL_CH_MODE_VOLUME;
+                        Disp2String("ERROR! Unknown vol_ch_mode value.\n");
+                    }
+                }
+            }
             
+            if (pressed_sw_count == 1) {
+                // only a single switch is pressed, do whatever that action is
+                
+                if (is_sw_pressed(PIN_RA4_CN0)) { // "PB1" pressed: UP
+                    if (vol_ch_mode == VOL_CH_MODE_VOLUME) {
+                        ir_tx_32_bit_code(IR_CODE_VOLUME_UP);
+                        Disp2String("VOLUME UP.\n");
+                    }
+                    else if (vol_ch_mode == VOL_CH_MODE_CHANNEL) {
+                        ir_tx_32_bit_code(IR_CODE_CHANNEL_UP);
+                        Disp2String("CHANNEL UP.\n");
+                    }
+                }
+                
+                else if (is_sw_pressed(PIN_RB4_CN1)) { // "PB2" pressed: DOWN
+                    if (vol_ch_mode == VOL_CH_MODE_VOLUME) {
+                        ir_tx_32_bit_code(IR_CODE_VOLUME_DOWN);
+                        Disp2String("VOLUME DOWN.\n");
+                    }
+                    else if (vol_ch_mode == VOL_CH_MODE_CHANNEL) {
+                        ir_tx_32_bit_code(IR_CODE_CHANNEL_DOWN);
+                        Disp2String("CHANNEL DOWN.\n");
+                    }
+                }
+            }
             
             if (ENABLE_DEBUG) {
                 char test_msg[255];
@@ -138,6 +207,11 @@ int main(void) {
             Disp2String(msg);
         }
         
+        // if PB1 and PB2 both pressed, then increase the timer count
+        if (is_sw_pressed(PIN_RA4_CN0) && is_sw_pressed(PIN_RB4_CN1)) {
+            ms_count_1_and_2_pressed += DEBOUNCE_DELAY_MS;
+            delay_ms(LOOP_DELAY_MS);
+        }
     }
     
     return 0;
