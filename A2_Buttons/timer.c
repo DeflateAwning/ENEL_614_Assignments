@@ -1,6 +1,6 @@
 /*
  * File:   timer.c
- * Author: user
+
  *
  * Created on February 12, 2024, 6:05 PM
  */

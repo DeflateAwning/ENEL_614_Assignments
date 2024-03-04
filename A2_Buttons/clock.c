@@ -1,6 +1,6 @@
 /*
  * File:   set_clock.c
- * Author: user
+
  *
  * Created on January 22, 2024, 5:54 PM
  */
