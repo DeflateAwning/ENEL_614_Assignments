@@ -84,33 +84,21 @@ int main(void) {
     VOL_CH_MODE_t vol_ch_mode = VOL_CH_MODE_VOLUME;
     
     // DEBUG: blink LED
-    while (1) {
-        ir_set_led_state(1);
-        LATBbits.LATB8 = 1;
-        delay32_ms(50);
-        ir_set_led_state(0);
-        LATBbits.LATB8 = 0;
-        delay32_ms(50);
-    }
+//    while (1) {
+//        ir_set_led_state(1);
+//        LATBbits.LATB8 = 1;
+//        delay32_ms(50);
+//        ir_set_led_state(0);
+//        LATBbits.LATB8 = 0;
+//        delay32_ms(50);
+//    }
     
     while (1) {
-        Disp2String("DEBUG: start send IR_BIT_0 \n");
-        ir_tx_single_bit(IR_BIT_0);
-        Disp2String("DEBUG: done send IR_BIT_0 \n");
-        
-//        Disp2String("DEBUG: start send IR_BIT_1 \n");
-//        ir_tx_single_bit(IR_BIT_1);
-//        Disp2String("DEBUG: done send IR_BIT_1 \n");
-//        
-//        
-//        Disp2String("DEBUG: start send IR_BIT_START \n");
-//        ir_tx_single_bit(IR_BIT_START);
-//        Disp2String("DEBUG: done send IR_BIT_START \n");
-//        
-//        
-//        Disp2String("DEBUG: start send POWER_ON_OFF \n");
+//        ir_tx_single_bit_0();
+//        ir_tx_single_bit_1();
+//        ir_tx_single_start();
 //        ir_tx_32_bit_code(IR_CODE_POWER_ON_OFF);
-//        Disp2String("DEBUG: done send POWER_ON_OFF \n");
+        ir_tx_32_bit_code(0xE0E040BF);
     }
     
     while (1) {
