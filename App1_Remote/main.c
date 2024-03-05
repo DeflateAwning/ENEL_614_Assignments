@@ -5,6 +5,8 @@
 #include "timer.h"
 #include "io.h"
 #include "ir_transmit.h"
+#include "delay.h"
+
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -33,8 +35,8 @@ int main(void) {
     
     AD1PCFG = 0xFFFF; // disable analog inputs (incl. Pin 7)
 
-     set_clock_freq(8000); // 8000 kHz => 9600 Baud
-     // at 8MHz, each clock period is 1.25e-7 sec = 0.125 us
+    set_clock_freq(8000); // 8000 kHz => 9600 Baud
+    // at 8MHz, each clock period is 1.25e-7 sec = 0.125 us
      
      // Other options (won't work):
 //     set_clock_freq(32); // 32 kHz => 300 Baud
@@ -43,20 +45,25 @@ int main(void) {
     
     InitUART2();
     
-    // Set LED as Output
-    TRISBbits.TRISB8 = 0;
+    // init GPIO
+    TRISBbits.TRISB8 = 0; // Set LED as Output
+    TRISBbits.TRISB9 = 0; // set IR LED state as output
+    
     LATBbits.LATB8 = 1; // set init LED state
+    LATBbits.LATB9 = 1; // set init IR LED state
     
-    delay_ms(1000);
+    ir_set_led_state(0); // turn off to begin
     
-    init_io_inputs();
-    cn_init();
+    delay32_ms(1000);
+    
+//    init_io_inputs();
+//    cn_init();
     
 //    while(1) {} // pause forever
     
     uint16_t loop_count = 0;
     
-    const uint8_t ENABLE_DEBUG = 0;
+    const uint8_t ENABLE_DEBUG = 1;
     
     
     // Req 1: Wakes up the PIC from idle or sleep when push buttons tied to:
@@ -68,7 +75,7 @@ int main(void) {
     
     uint8_t last_sw_state = sw_state_as_int();
     
-    if (ENABLE_DEBUG)
+//    if (ENABLE_DEBUG)
     Disp2String("DEBUG: Starting while(1)\n");
     
     const uint32_t DEBOUNCE_DELAY_MS = 75;
@@ -76,14 +83,44 @@ int main(void) {
     uint32_t ms_count_1_and_2_pressed = 0;
     VOL_CH_MODE_t vol_ch_mode = VOL_CH_MODE_VOLUME;
     
+    // DEBUG: blink LED
     while (1) {
-        if (ENABLE_DEBUG)
+        ir_set_led_state(1);
+        LATBbits.LATB8 = 1;
+        delay32_ms(50);
+        ir_set_led_state(0);
+        LATBbits.LATB8 = 0;
+        delay32_ms(50);
+    }
+    
+    while (1) {
+        Disp2String("DEBUG: start send IR_BIT_0 \n");
+        ir_tx_single_bit(IR_BIT_0);
+        Disp2String("DEBUG: done send IR_BIT_0 \n");
+        
+//        Disp2String("DEBUG: start send IR_BIT_1 \n");
+//        ir_tx_single_bit(IR_BIT_1);
+//        Disp2String("DEBUG: done send IR_BIT_1 \n");
+//        
+//        
+//        Disp2String("DEBUG: start send IR_BIT_START \n");
+//        ir_tx_single_bit(IR_BIT_START);
+//        Disp2String("DEBUG: done send IR_BIT_START \n");
+//        
+//        
+//        Disp2String("DEBUG: start send POWER_ON_OFF \n");
+//        ir_tx_32_bit_code(IR_CODE_POWER_ON_OFF);
+//        Disp2String("DEBUG: done send POWER_ON_OFF \n");
+    }
+    
+    while (1) {
+        if (ENABLE_DEBUG && 0)
             Disp2String("DEBUG: Top of while(1)\n");
         
 //        LATBbits.LATB8 = 1; // turn LED on
-//        delay_ms(500);
+//        delay32_ms(500);
 //        LATBbits.LATB8 = 0; // turn LED off
-//        delay_ms(500);
+//        delay32_ms(500);
         
         // light up LED if any button is pressed
 //        LATBbits.LATB8 = is_any_sw_pressed();
@@ -99,7 +136,7 @@ int main(void) {
         
         if ((cur_sw_state != last_sw_state)) {
             // debouncing delay
-            delay_ms(DEBOUNCE_DELAY_MS);
+            delay32_ms(DEBOUNCE_DELAY_MS);
             
             uint8_t pressed_sw_count = 0;
             
@@ -210,7 +247,7 @@ int main(void) {
         // if PB1 and PB2 both pressed, then increase the timer count
         if (is_sw_pressed(PIN_RA4_CN0) && is_sw_pressed(PIN_RB4_CN1)) {
             ms_count_1_and_2_pressed += DEBOUNCE_DELAY_MS;
-            delay_ms(LOOP_DELAY_MS);
+            delay32_ms(LOOP_DELAY_MS);
         }
     }
     

@@ -28,18 +28,19 @@
 
 // This is a guard condition so that contents of this file are not included
 // more than once.  
-#ifndef __INCLUDE_GUARD_TIMER_H__
-#define	__INCLUDE_GUARD_TIMER_H__
+#ifndef __INCLUDE_GUARD__DELAY_H__
+#define	__INCLUDE_GUARD__DELAY_H__
 
-#include <xc.h> // include processor files - each processor file is guarded.  
+#include <xc.h>
 
-extern uint16_t active_clk_freq_khz;
-extern uint16_t active_clk_freq_MHz;
+// import to make delay32 available
+#define FCY (4000000) // half of 8 MHz
+#include <libpic30.h>
 
-void delay_us(uint16_t delay_time_us);
-//void delay_ms(uint16_t delay_time_ms); // disable
-void delay_sec(uint16_t delay_time_sec);
+#define delay32_ms(delay_time_ms) (__delay_ms((delay_time_ms)))
+#define delay32_us(delay_time_us) (__delay_us((delay_time_us)))
+#define delay32_cycles(delay_time_cycles) (__delay32((delay_time_cycles)))
 
 
-#endif	/* __INCLUDE_GUARD_TIMER_H__ */
+#endif	/* __INCLUDE_GUARD__DELAY_H__ */
 

@@ -25,14 +25,27 @@
 #ifndef __INCLUDE_GUARD__IR_TRANSMIT_H__
 #define	__INCLUDE_GUARD__IR_TRANSMIT_H__
 
-#include <xc.h> // include processor files - each processor file is guarded.  
-
+#include "xc.h"
+#include "clock.h"
+#include "timer.h"
 
 #define IR_CODE_POWER_ON_OFF   (0xE0E040BF)
 #define IR_CODE_CHANNEL_UP     (0xE0E048B7)
 #define IR_CODE_CHANNEL_DOWN   (0xE0E008F7)
 #define IR_CODE_VOLUME_UP      (0xE0E0E01F)
 #define IR_CODE_VOLUME_DOWN    (0xE0E0D02F)
+
+typedef enum {
+    IR_BIT_0 = 0,
+    IR_BIT_1 = 1,
+    IR_BIT_START = 2
+} IR_BIT_t;
+
+void ir_tx_single_bit(IR_BIT_t ir_bit);
+
+void ir_tx_init();
+void ir_tx_reset();
+void ir_set_led_state(uint8_t en);
 
 void ir_tx_32_bit_code(uint32_t code);
 

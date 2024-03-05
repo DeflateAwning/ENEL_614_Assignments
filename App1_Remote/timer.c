@@ -1,6 +1,5 @@
 /*
  * File:   timer.c
-
  *
  * Created on February 12, 2024, 6:05 PM
  */
@@ -10,10 +9,13 @@
 #include "timer.h"
 #include "clock.h"
 
+#include "delay.h"
+
 // globals
 
 // set to 0 when delay is triggered, set to 1 when delay is over
 volatile uint8_t is_tmr2_isr_serviced_yet = 0;
+
 
 void delay_us(uint16_t delay_time_us) {
     // NOTE: delay_us requires that the clock be set to 8 MHz
