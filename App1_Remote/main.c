@@ -56,8 +56,8 @@ int main(void) {
     
     delay32_ms(1000);
     
-//    init_io_inputs();
-//    cn_init();
+    init_io_inputs();
+    cn_init();
     
 //    while(1) {} // pause forever
     
@@ -93,13 +93,13 @@ int main(void) {
 //        delay32_ms(50);
 //    }
     
-    while (1) {
+    // DEBUG: send a single type of output on repeat
+//    while (1) {
 //        ir_tx_single_bit_0();
 //        ir_tx_single_bit_1();
 //        ir_tx_single_start();
 //        ir_tx_32_bit_code(IR_CODE_POWER_ON_OFF);
-        ir_tx_32_bit_code(0xE0E040BF);
-    }
+//    }
     
     while (1) {
         if (ENABLE_DEBUG && 0)

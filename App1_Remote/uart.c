@@ -13,8 +13,6 @@
 #include "uart.h"
 
 
-
-
 unsigned int clkval;
 
 ///// Initialization of UART 2 module.
@@ -129,7 +127,7 @@ void __attribute__ ((interrupt, no_auto_psv)) _U2TXInterrupt(void) {
 
 
 
-
+/*
 // Displays 16 bit number in Hex form using UART2
 void Disp2Hex(unsigned int DispData)   
 {
@@ -206,7 +204,7 @@ void Disp2Dec(uint16_t Dec_num)
    
     return;
 }
-
+*/
 
 void Disp2String(char *str) //Displays String of characters
 {

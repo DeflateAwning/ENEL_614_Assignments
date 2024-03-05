@@ -16,10 +16,6 @@
 #define CARRIER_CYCLE_COUNT_560US (21) // WA: 560 us at 38 kHz
 #define CARRIER_CYCLE_COUNT_1690US (64) // WA: 1690 us at 38 kHz
 
-#define CLK_CYCLE_COUNT_4500US (36000) // WA: 4500 us at 8 MHz
-#define CLK_CYCLE_COUNT_560US (4480) // WA: 560 us at 8 MHz
-#define CLK_CYCLE_COUNT_1690US (13520) // WA: 1690 us at 8 MHz
-
 #define SET_IR_STATE(x) (LATBbits.LATB9 = (x))
 
 void ir_set_led_state(uint8_t en) {
