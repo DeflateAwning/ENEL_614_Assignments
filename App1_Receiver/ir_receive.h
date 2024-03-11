@@ -35,6 +35,12 @@
 #define IR_CODE_VOLUME_UP      (0xE0E0E01FU)
 #define IR_CODE_VOLUME_DOWN    (0xE0E0D02FU)
 
+typedef enum {
+    IR_BIT_0 = 0,
+    IR_BIT_1 = 1,
+    IR_BIT_START = 2
+} ir_bit_enum_t;
+
 void ir_tx_single_start();
 void ir_tx_single_bit_0();
 void ir_tx_single_bit_1();
@@ -44,5 +50,9 @@ void ir_tx_reset();
 void ir_set_led_state(uint8_t en);
 
 void ir_tx_32_bit_code(uint32_t code);
+
+void debug_print_carrier_log(const uint8_t carrier_detect_log[], uint32_t carrier_detect_log_len);
+uint32_t parse_carrier_log_to_code(const uint8_t carrier_detect_log[], uint32_t carrier_detect_log_len);
+
 
 #endif	/* __INCLUDE_GUARD__IR_TRANSMIT_H__ */

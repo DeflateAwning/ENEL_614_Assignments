@@ -7,8 +7,11 @@
 
 #include "io.h"
 
+// IR Receiver: RB2/Pin 6/CN6
+
+
 // keys are PIN_NAME_t enum values; 1 = pressed
-volatile uint8_t input_states[3] = {0, 0, 0};
+volatile uint8_t input_states[4] = {0, 0, 0, 0};
 
 
 void init_io_inputs(void) {
@@ -27,6 +30,11 @@ void init_io_inputs(void) {
     TRISAbits.TRISA2 = 1;
     CNPU2bits.CN30PUE = 1; // Enable pull-up on CN30 pin
     CNEN2bits.CN30IE = 1; // Enable notification
+    
+    // Configure RB2/CN6 as input
+    TRISBbits.TRISB4 = 1;
+    CNPU1bits.CN6PUE = 1; // Enable pull-up on CN1 pin
+    CNEN1bits.CN6IE = 1; // Enable notification
 }
 
 void cn_init(void) {
@@ -56,6 +64,8 @@ char* pin_name_to_string(PIN_NAME_t pin) {
             return "PIN_RB4_CN1";
         case PIN_RA2_CN30:
             return "PIN_RA2_CN30";
+        case PIN_RB2_CN6:
+            return "PIN_RB2_CN6";
         default:
             return "Unknown PIN";
     }
@@ -71,6 +81,10 @@ uint8_t sw_state_as_int(void) {
     return val;
 }
 
+uint8_t get_ir_rx_state(void) {
+    return input_states[PIN_RB2_CN6];
+}
+
 
 ///// Change of pin Interrupt subroutine
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void) {
@@ -78,13 +92,15 @@ void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void) {
         input_states[PIN_RA4_CN0] = !PORTAbits.RA4;
         input_states[PIN_RB4_CN1] = !PORTBbits.RB4;
         input_states[PIN_RA2_CN30] = !PORTAbits.RA2;
+        input_states[PIN_RB2_CN6] = !PORTBbits.RB2;
         
         LATBbits.LATB8 = !LATBbits.LATB8; // DEBUG: toggle light
     }
     IFS1bits.CNIF = 0; // clear IF flag
     Nop();
 }
-// NOTE
+
+// NOTE:
 // LATBbits.LATB4 = 1; // to write to a pin
 // if(PORTBbits.RB4 == 1) // to  read a pin
 // Common interrupt routine for all CN inputs

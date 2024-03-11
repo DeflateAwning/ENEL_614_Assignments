@@ -32,11 +32,13 @@
 #define	__IO_H_INCLUDE_GUARD_H__
 
 #include <xc.h>
+#include <stdint.h>
 
 typedef enum {
     PIN_RA4_CN0 = 0,
     PIN_RB4_CN1 = 1,
-    PIN_RA2_CN30 = 2
+    PIN_RA2_CN30 = 2,
+    PIN_RB2_CN6 = 3 // used for IR Receiver
 } PIN_NAME_t;
 
 void init_io_inputs(void);
@@ -47,7 +49,7 @@ void cn_init(void);
 uint8_t is_any_sw_pressed(void);
 uint8_t is_sw_pressed(PIN_NAME_t pin);
 uint8_t sw_state_as_int(void);
-
+uint8_t get_ir_rx_state(void);
 
 #endif	/* __IO_H_INCLUDE_GUARD_H__ */
 
