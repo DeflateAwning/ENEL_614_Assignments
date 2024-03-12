@@ -8,6 +8,9 @@
 #include "uart.h"
 #include "delay.h"
 
+#include <stdio.h>
+#include <string.h>
+
 // Assume 8 MHz clock
 #define CLOCK_CYCLES_IN_38KHZ_HALF_PERIOD (105) // WA: ((1/(38 kHz)) at 8MHz) * 0.5
 
@@ -121,7 +124,7 @@ const uint16_t elem_count_560us_max = 5;
 
 // 1690us / 200us = 8.45 elems
 const uint16_t elem_count_1690us_min = 6;
-const uint16_t elem_count_1690us_max = 14;
+const uint16_t elem_count_1690us_max = 17;
 
 // internal only; not in header
 void count_consec_elems(
@@ -158,8 +161,13 @@ uint32_t parse_carrier_log_to_code(const uint8_t carrier_detect_log[], uint32_t 
 
         if (consec_count >= elem_count_4500us_min) {
             // found the start bit ON part
+            // Disp2String("Found START BIT's ON pattern.\n");
             break;
         }
+    }
+    if (carrier_detect_log_idx == carrier_detect_log_len) {
+        // Disp2String("Did not find START BIT's ON pattern.\n");
+        return 1;
     }
 
     // find the start bit [high for 4500us, low for 4500us] (end-of-LOW section)
@@ -169,14 +177,19 @@ uint32_t parse_carrier_log_to_code(const uint8_t carrier_detect_log[], uint32_t 
             &consec_count, &end_idx);
 
         if (consec_count >= elem_count_4500us_min) {
-            // found the start bit ON part
+            // found the start bit OFF part
+            // Disp2String("Found START BIT's OFF pattern.\n");
             break;
         }
+    }
+    if (carrier_detect_log_idx == carrier_detect_log_len) {
+        // Disp2String("Did not find START BIT's OFF pattern, after ON.\n");
+        return 2;
     }
 
     uint32_t output_code = 0;
 
-    for (uint8_t bit_place = 31; bit_place >= 0; bit_place--) {
+    for (int8_t bit_place = 31; bit_place >= 0; bit_place--) {
         // find the regular high bit
         for (carrier_detect_log_idx = end_idx; carrier_detect_log_idx < carrier_detect_log_len; carrier_detect_log_idx++) {
             count_consec_elems(
@@ -185,8 +198,13 @@ uint32_t parse_carrier_log_to_code(const uint8_t carrier_detect_log[], uint32_t 
 
             if ((consec_count >= elem_count_560us_min) && (consec_count <= elem_count_560us_max)) {
                 // found the start bit ON part
+                // Disp2String("Found normal BIT's ON pattern.\n");
                 break;
             }
+        }
+        if (carrier_detect_log_idx == carrier_detect_log_len) {
+            // Disp2String("Did not find normal BIT's ON pattern.\n");
+            return 3;
         }
 
         // find the low bit - either 560us (Bit 0) or 1690us (Bit 1)
@@ -198,16 +216,24 @@ uint32_t parse_carrier_log_to_code(const uint8_t carrier_detect_log[], uint32_t 
             // now know the length of the OFF section - find out if it's a Bit 0 or Bit 1
             if ((consec_count >= elem_count_560us_min) && (consec_count <= elem_count_560us_max)) {
                 // no change to output_code (it's a 0)
+                // Disp2String("Found normal BIT's OFF pattern (as a 0).\n");
                 break;
             }
             else if ((consec_count >= elem_count_1690us_min) && (consec_count <= elem_count_1690us_max)) {
                 // set the bit_place to a 1
                 // bit_place 31 is the temporally-first bit received, then bit 30, ...
+                // Disp2String("Found normal BIT's OFF pattern (as a 1).\n");
                 output_code |= (1UL << bit_place);
                 break;
             }
         }
+        if (carrier_detect_log_idx == carrier_detect_log_len) {
+            // Disp2String("Did not find normal BIT's OFF pattern (after ON.\n");
+            return 4;
+        }
     }
+    
+    return output_code;
 }
 
 void debug_print_carrier_log(const uint8_t carrier_detect_log[], uint32_t carrier_detect_log_len) {
@@ -224,6 +250,7 @@ void debug_print_carrier_log(const uint8_t carrier_detect_log[], uint32_t carrie
     
     Disp2String("Carrier detect log counts: ");
     uint32_t carrier_detect_log_idx = 0;
+    uint16_t print_count = 0;
     while (carrier_detect_log_idx < carrier_detect_log_len) {
         uint32_t consec_count = 0;
         uint32_t end_idx = 0;
@@ -234,8 +261,13 @@ void debug_print_carrier_log(const uint8_t carrier_detect_log[], uint32_t carrie
             carrier_detect_log_idx,
             &consec_count, &end_idx);
 
+        print_count += 1;
+        if (print_count % 16 == 3) {
+            Disp2String("\nNext byte:  ");
+        }
+        
         char msg[10];
-        sprintf(msg, "%d", consec_count);
+        sprintf(msg, "%lu", consec_count);
         Disp2String(msg);
         if (carrier_detect_log[carrier_detect_log_idx] == 1) {
             Disp2String("X");
@@ -243,6 +275,7 @@ void debug_print_carrier_log(const uint8_t carrier_detect_log[], uint32_t carrie
         else {
             Disp2String("_");
         }
+        Disp2String(", ");
 
         carrier_detect_log_idx = end_idx;
     }

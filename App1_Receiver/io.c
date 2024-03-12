@@ -13,7 +13,6 @@
 // keys are PIN_NAME_t enum values; 1 = pressed
 volatile uint8_t input_states[4] = {0, 0, 0, 0};
 
-
 void init_io_inputs(void) {
     
     // Configure RA4/CN0 as input
@@ -89,12 +88,14 @@ uint8_t get_ir_rx_state(void) {
 ///// Change of pin Interrupt subroutine
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void) {
     if (IFS1bits.CNIF == 1) {
+        const uint8_t cur_ir_state = !PORTBbits.RB2;
+        
         input_states[PIN_RA4_CN0] = !PORTAbits.RA4;
         input_states[PIN_RB4_CN1] = !PORTBbits.RB4;
         input_states[PIN_RA2_CN30] = !PORTAbits.RA2;
-        input_states[PIN_RB2_CN6] = !PORTBbits.RB2;
+        input_states[PIN_RB2_CN6] = cur_ir_state;
         
-        LATBbits.LATB8 = !LATBbits.LATB8; // DEBUG: toggle light
+        // LATBbits.LATB8 = !LATBbits.LATB8; // DEBUG: toggle light
     }
     IFS1bits.CNIF = 0; // clear IF flag
     Nop();

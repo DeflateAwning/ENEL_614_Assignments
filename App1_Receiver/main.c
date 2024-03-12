@@ -105,7 +105,7 @@ int main(void) {
     Disp2String("DEBUG: Starting while(1)\n");
     
     while (1) {
-        if (ENABLE_DEBUG) // TODO: make it && 0 for final version   
+        if (ENABLE_DEBUG && 0) // TODO: make it && 0 for final version   
             Disp2String("DEBUG: Top of while(1)\n");
         
 //        LATBbits.LATB8 = 1; // turn LED on
@@ -114,56 +114,59 @@ int main(void) {
 //        delay32_ms(500);
         
         // carrier detect log represents the state of the envelope, each in a period of ~200us
-        const uint32_t carrier_detect_log_len = 1000;
-        uint8_t carrier_detect_log[carrier_detect_log_len]; // newest at 0
+        // max duration of a message is:
+        //   - 4500us ON carrier
+        //   - 4500us OFF carrier
+        //   - 32 bits * 560us (ON carrier) = 17920us
+        //   - 32 bits * 1690us (OFF carrier) = 54080us
+        //   = (4500*2) + (32*560) + (32*1690) = 81000us = 81ms = (405 detects * (200us per detect))
+        const uint32_t carrier_detect_log_len = 900; // 900 is about 2*405, so ample
+        // TODO: could convert the following bool array to use all 8 bits of each byte
+        uint8_t carrier_detect_log[carrier_detect_log_len]; // earliest at 0; init to all zeros
+        memset(carrier_detect_log, 0, carrier_detect_log_len); // init to all zeros
         
-        uint8_t last_is_carrier_detected = 0;
-        uint8_t consec_count_is_carrier_detected = 0;
-        uint8_t carrier_detected_count_in_log = 0;
+        uint32_t carrier_detected_count_in_log = 0;
+        
+        while (! get_ir_rx_state()) {
+            // just delay until it's active, so that the code always starts around the start of the buffer
+            LATBbits.LATB8 = !LATBbits.LATB8; // DEBUG: toggle light
+            delay32_cycles(750);
+        }
         
         for (uint32_t carrier_detect_log_idx = 0; carrier_detect_log_idx < carrier_detect_log_len; carrier_detect_log_idx++) {
+            // Disp2String("carrier_detect_log_idx++ loop\n");
             
-            // detect the carrier: init variables
-            uint32_t carrier_detect_buffer = 0;
-            const uint8_t carrier_detect_buffer_len = 32; // matches carrier_detect_buffer number of bits
-            const uint32_t carrier_detect_buffer_delay_per_element_us = 5; 
-            // 1 us = 8 clocks, 5 us = 40 clocks
-            // 5 us * 32 elements = 160 us (or really, probably closer to 200 us)
-            // max duration of a message is:
-            //   - 4500us ON carrier
-            //   - 4500us OFF carrier
-            //   - 32 bits * 560us (ON carrier) = 17920us
-            //   - 32 bits * 1690us (OFF carrier) = 54080us
-            //   = (4500*2) + (32*560) + (32*1690) = 81000us = 81ms = (405 detects * (200us per detect))
-
-            // detect the carrier: the answer is "was the carrier going in the last 200us"
-            for (uint8_t i = 0; i < carrier_detect_buffer_len; i++) {
-                carrier_detect_buffer = (carrier_detect_buffer << 1) | (get_ir_rx_state());
-                
-                delay32_us(carrier_detect_buffer_delay_per_element_us);
-            }
             
-            // carrier is "detected" if it's not all 1's, and it's not all 0's
-            const uint8_t is_carrier_detected = ((carrier_detect_buffer > 0) &&
-                    (carrier_detect_buffer < UINT32_T_MAX_VALUE));
+            const uint8_t is_carrier_detected = get_ir_rx_state();
             
             // add the current is_carrier_detected at carrier_detect_log_idx
             carrier_detect_log[carrier_detect_log_idx] = is_carrier_detected;
             
             carrier_detected_count_in_log += is_carrier_detected;
+            
+            // delay32_us(200);
+             LATBbits.LATB8 = !LATBbits.LATB8; // DEBUG: toggle light
+            delay32_cycles(750);
+            // emperically, 800 cycles = 215us per sample (on each edge)
+            // emperically, 600 cycles = 165us per sample (on each edge)
+            // emperically, 700 cycles = 189us per sample
+            // emperically, 725 cycles = 194us per sample
+            // emperically, 750 cycles = 201us per sample
         }
 
         uint32_t received_code = 0;
 
         // 25 is kinda arbitrary, but reasonable: (4500us start bit) / (200us per detect) = 22 detects minimum
         if (carrier_detected_count_in_log > 25) {
+            Disp2String("Carrier was detected in >25 samples...\n");
             debug_print_carrier_log(carrier_detect_log, carrier_detect_log_len);
+            Disp2String("Done debug print, parsing code...\n");
             
             // run the parser
             received_code = parse_carrier_log_to_code(carrier_detect_log, carrier_detect_log_len);
 
-            char msg[40];
-            sprintf(msg, "Received code: 0x%08X", received_code);
+            char msg[20];
+            sprintf(msg, "Received code: 0x%04X%04X", (uint16_t)(received_code>>16), (uint16_t)(received_code&0xFFFF));
             Disp2String(msg);
 
             if (received_code == IR_CODE_POWER_ON_OFF) {
@@ -183,8 +186,10 @@ int main(void) {
         }
         else {
             // TODO: maybe disable this printing, even during debug
-            debug_print_carrier_log(carrier_detect_log, carrier_detect_log_len);
-            Disp2String("No code received.\n\n");
+            
+            // Disp2String("No code received/no carrier detected.\n\n");
+            // debug_print_carrier_log(carrier_detect_log, carrier_detect_log_len);
+            
         }
     }
     
