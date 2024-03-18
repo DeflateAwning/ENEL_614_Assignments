@@ -42,6 +42,8 @@ int main(void) {
     
     InitUART2();
     
+    init_adc();
+    
     // init debugging LED
     TRISBbits.TRISB8 = 0; // Set LED as Output
     LATBbits.LATB8 = 1; // set init LED state
@@ -60,18 +62,25 @@ int main(void) {
     Disp2String("DEBUG: Starting while(1)\n");
     
     while (1) {
-        
-        Disp2String("DEBUG: Top of while(1)\n");
+        // Disp2String("DEBUG: Top of while(1)\n");
         
         LATBbits.LATB8 = 1; // turn LED on
-        delay32_ms(500);
+        delay32_ms(250);
         LATBbits.LATB8 = 0; // turn LED off
-        delay32_ms(500);
+        delay32_ms(250);
         
         const uint16_t adc_value = read_adc_value();
         
         char msg[200];
-        sprintf(msg, "ADC Value: %d\n", adc_value);
+        sprintf(msg, "ADC Value: %04d  ", adc_value);
+        
+        // append a bar graph
+        const uint8_t main_msg_len = strlen(msg);
+        const uint8_t bar_len = (adc_value / 16) + 1; // max_len = 1024/16 = 64 chars
+        
+        memset(msg + main_msg_len, '=', bar_len); // write the bar graph bar
+        msg[main_msg_len + bar_len] = '\n';
+        msg[main_msg_len + bar_len + 1] = 0; // null terminator
         
         Disp2String(msg);
     }

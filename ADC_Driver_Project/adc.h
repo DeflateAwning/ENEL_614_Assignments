@@ -33,6 +33,7 @@
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 
+void init_adc(void);
 uint16_t read_adc_value(void);
 
 #endif	/* __INCLUDE_GUARD__ADC_H__ */
