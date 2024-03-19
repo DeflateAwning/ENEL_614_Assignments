@@ -52,7 +52,7 @@ uint16_t read_adc_value(void) {
     const uint16_t adc_value = ADC1BUF0;
     
     AD1CON1bits.SAMP = 0; // End sampling
-    AD1CON1bits.ADON = 0; // Turn off ADC
+    AD1CON1bits.ADON = 0; // Turn off ADC - saves power
     
     return adc_value;
 }

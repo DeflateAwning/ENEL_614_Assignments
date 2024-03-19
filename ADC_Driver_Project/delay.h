@@ -34,7 +34,8 @@
 #include <xc.h>
 
 // import to make delay32 available
-#define FCY (4000000UL) // half of 8 MHz
+//#define FCY (4000000UL) // half of 8 MHz
+#define FCY (16000UL) // half of 32 kHz
 #include <libpic30.h>
 
 #define delay32_ms(delay_time_ms) (__delay_ms((delay_time_ms)))

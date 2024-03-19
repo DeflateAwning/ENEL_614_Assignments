@@ -32,11 +32,10 @@ int main(void) {
     
     AD1PCFG = 0xFFFF; // disable analog inputs (incl. Pin 7)
 
-    set_clock_freq(8000); // 8000 kHz => 9600 Baud
-    // at 8MHz, each clock period is 1.25e-7 sec = 0.125 us
+//    set_clock_freq(8000); // 8000 kHz => 9600 Baud
      
-     // Other options (won't work):
-//     set_clock_freq(32); // 32 kHz => 300 Baud
+    // use 32 kHz to save power
+     set_clock_freq(32); // 32 kHz => 300 Baud
 //     set_clock_freq(500); // 500 kHz => 4800 Baud
 //    set_clock_freq(32);
     
@@ -64,10 +63,10 @@ int main(void) {
     while (1) {
         // Disp2String("DEBUG: Top of while(1)\n");
         
-        LATBbits.LATB8 = 1; // turn LED on
-        delay32_ms(250);
-        LATBbits.LATB8 = 0; // turn LED off
-        delay32_ms(250);
+//        LATBbits.LATB8 = 1; // turn LED on
+//        delay32_ms(250);
+//        LATBbits.LATB8 = 0; // turn LED off
+//        delay32_ms(250);
         
         const uint16_t adc_value = read_adc_value();
         
