@@ -61,17 +61,18 @@ int main(void) {
     // set CVREF
     init_cvref(0.5);
     
-    for (float i = 0; i < 2.38; i += 0.05) {
-        init_cvref(i);
-    }
-    
     while (1) {
          Disp2String("DEBUG: Top of while(1)\n");
+         
+        for (float i = 0; i < 2.38; i += 0.05) {
+            init_cvref(i);
+            delay32_ms(500);
+        }
         
         LATBbits.LATB8 = 1; // turn LED on
-        delay32_ms(10000);
+        delay32_ms(5000);
         LATBbits.LATB8 = 0; // turn LED off
-        delay32_ms(10000);
+        delay32_ms(5000);
         
     }
     return 0;
