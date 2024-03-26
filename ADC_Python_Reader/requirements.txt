@@ -1,0 +1,7 @@
+polars
+pyserial
+loguru
+easygui
+hvplot
+
+

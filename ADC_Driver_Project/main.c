@@ -32,12 +32,11 @@ int main(void) {
     
     AD1PCFG = 0xFFFF; // disable analog inputs (incl. Pin 7)
 
-//    set_clock_freq(8000); // 8000 kHz => 9600 Baud
+    set_clock_freq(8000); // 8000 kHz => 9600 Baud
      
     // use 32 kHz to save power
-     set_clock_freq(32); // 32 kHz => 300 Baud
+//     set_clock_freq(32); // 32 kHz => 300 Baud
 //     set_clock_freq(500); // 500 kHz => 4800 Baud
-//    set_clock_freq(32);
     
     InitUART2();
     
@@ -55,6 +54,7 @@ int main(void) {
     uint16_t loop_count = 0;
     
     const uint8_t ENABLE_DEBUG = 1;
+    const uint8_t ENABLE_BAR_CHART = 0;
     
     
 //    if (ENABLE_DEBUG)
@@ -73,14 +73,23 @@ int main(void) {
         char msg[200];
         sprintf(msg, "ADC Value: %04d  ", adc_value);
         
-        // append a bar graph
         const uint8_t main_msg_len = strlen(msg);
-        const uint8_t bar_len = (adc_value / 16) + 1; // max_len = 1024/16 = 64 chars
         
-        memset(msg + main_msg_len, '=', bar_len); // write the bar graph bar
-        msg[main_msg_len + bar_len] = '\n';
-        msg[main_msg_len + bar_len + 1] = 0; // null terminator
+        // append a bar graph
+        if (ENABLE_BAR_CHART) {
+            const uint8_t bar_len = (adc_value / 16) + 1; // max_len = 1024/16 = 64 chars
+
+            memset(msg + main_msg_len, '=', bar_len); // write the bar graph bar
+            msg[main_msg_len + bar_len] = '\n';
+            msg[main_msg_len + bar_len + 1] = 0; // null terminator
+        }
+        else {
+            // add newline
+            msg[main_msg_len] = '\n';
+            msg[main_msg_len + 1] = 0; // null terminator
+        }
         
+        // print the message (ADC value AND bar chart)
         Disp2String(msg);
     }
     return 0;
