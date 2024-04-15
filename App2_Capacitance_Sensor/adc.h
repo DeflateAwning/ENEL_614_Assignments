@@ -36,5 +36,8 @@
 void init_adc(void);
 uint16_t read_adc_value(void);
 
+float adc_val_to_volts(uint16_t val_10_bits);
+uint16_t adc_val_to_mV(uint16_t val_10_bits);
+
 #endif	/* __INCLUDE_GUARD__ADC_H__ */
 

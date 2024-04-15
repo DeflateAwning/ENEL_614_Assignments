@@ -41,7 +41,7 @@ void r_sense_and_log(
     uint32_t resistance_ohms,
     uint16_t sample_count);
 
-
+uint32_t c_sense_2_point_delta_pF_v1();
 
 #endif	/* __INCLUDE_GUARD__Z_SENSE_H__ */
 

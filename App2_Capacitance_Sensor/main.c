@@ -42,7 +42,10 @@ int main(void) {
     
     InitUART2();
     
+    // ADC Init: AN11/RB13 as INPUT
     init_adc();
+    
+    // CTMU Init: Pin 16/AN11/RB13
     init_ctmu(0); // 0 = 5.5 uA; reconfigured later
     
     // CTMU: uses Pin 16/AN11/RB13
@@ -56,7 +59,7 @@ int main(void) {
     
     delay32_ms(1000);
     
-    Disp2String("DEBUG: Starting while(1)\n");
+    Disp2String("\n\nDEBUG: Starting while(1)\n");
     
     
     while (1) {
@@ -64,7 +67,10 @@ int main(void) {
         
         // r_sense_and_log(0, 100000L, 100);
         // r_sense_and_log(0, 91000, 100);
-        r_sense_and_log(1, 10000, 100);
+        // r_sense_and_log(1, 10000, 100);
+        
+        c_sense_2_point_delta_pF_v1(); // TODO: use output
+        
         
         LATBbits.LATB8 = 1; // turn LED on
         delay32_ms(1000);

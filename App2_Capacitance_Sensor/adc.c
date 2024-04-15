@@ -28,10 +28,19 @@ void init_adc(void) {
     AD1CON2bits.ALTS = 0; // always use Mux A
     
     
-    // Configure the ADC’s sample time by setting bits in AD1CON3 shown in slide 17
+    // Configure the ADC's sample time by setting bits in AD1CON3 shown in slide 17
+    // For the capacitive sensor, we require very fast sampling, so the lowest values are picked.
     AD1CON3bits.ADRC = 0; // system clock
-    AD1CON3bits.SAMC = 0b11111;
-    AD1CON3bits.ADCS = 0b11111;
+    
+    // set the time per sample, as a multiplier of T_ad
+    AD1CON3bits.SAMC = 0b11111; // 0b11111 = 31*T_ad
+    
+    // set the T_ad clock speed, roughly as a multiplier of the instruction clock
+    // 0b00000 means "as fast as possible" (2 * T_cy), where T_cy is the instruction clock period
+    AD1CON3bits.ADCS = 0b00000; // 0b00000 = 2*T_cy, 0b11111 = 64*T_cy
+    
+    // With 8MHz, SAMC=8, and ADCS=0 (thus 2*T_cy), 8*2*(1/8e6) = 2us total time
+    // With 8MHz, SAMC=31, and ADCS=0 (thus 2*T_cy), 31*2*(1/8e6) = 7.75us total time
     
     // General note: Ensure sample time is 1/10th of signal being sampled or as per application’s speed and needs
     
@@ -47,6 +56,8 @@ void init_adc(void) {
 }
 
 uint16_t read_adc_value(void) {
+    // Returns a 10-bit unsigned number
+    
     // Enable ADC module
     AD1CON1bits.ADON = 1;
     
@@ -59,4 +70,18 @@ uint16_t read_adc_value(void) {
     AD1CON1bits.ADON = 0; // Turn off ADC - saves power
     
     return adc_value;
+}
+
+float adc_val_to_volts(uint16_t val_10_bits) {
+    return ((float) val_10_bits) * 3.3 / 1023.0;
+}
+
+uint16_t adc_val_to_mV(uint16_t val_10_bits) {
+    // Option 1: slower
+    // return (uint16_t) (adc_val_to_volts(val_10_bits) * 1000);
+
+    // Option 2: should be faster (uses a bit-shift)
+    // first, cast to a wider type to avoid overflow, because I don't trust C
+    const uint32_t val_wider = (uint32_t) val_10_bits;
+    return (uint16_t) ((val_wider * 3300) >> 10);
 }
