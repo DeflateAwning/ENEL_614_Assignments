@@ -69,14 +69,18 @@ int main(void) {
         // r_sense_and_log(0, 91000, 100);
         // r_sense_and_log(1, 10000, 100);
         
-        c_sense_2_point_delta_pF_v1(); // TODO: use output
+        // c_sense_2_point_delta_pF_v1(); // old demo function
+        uint32_t c_pF = c_sense_2_point_delta_pF();
+
+        // report the capacitance for Python to read
+        char msg[50];
+        sprintf(msg, "REPORT_CAP_pF=%lu\n", c_pF);
+        Disp2String(msg);
         
-        
-        LATBbits.LATB8 = 1; // turn LED on
-        delay32_ms(1000);
-        LATBbits.LATB8 = 0; // turn LED off
-        delay32_ms(1000);
-        
+        // LATBbits.LATB8 = 1; // turn LED on
+        // delay32_ms(1000);
+        // LATBbits.LATB8 = 0; // turn LED off
+        // delay32_ms(1000);
     }
     return 0;
 }
