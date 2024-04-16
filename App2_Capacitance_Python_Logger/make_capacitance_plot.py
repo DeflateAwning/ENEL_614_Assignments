@@ -56,9 +56,11 @@ def read_serial_data(port: str) -> pl.DataFrame:
 						"cap_value": cap_value,
 					})
 
-				if time.time() - last_print_msg_time > 0.5:
-					logger.info(f"Read {len(data)} samples so far ({time.time()-start_sampling_time:.1f} sec)...")
-					last_print_msg_time = time.time()
+					if time.time() - last_print_msg_time > 0.5:
+						logger.info(f"Read {len(data)} samples so far. Last value: {cap_value:>8} pF (at {time.time()-start_sampling_time:.1f} sec)...")
+						last_print_msg_time = time.time()
+				else:
+					logger.debug(f"Received: {line}")
 
 		except KeyboardInterrupt:
 			logger.info("Got keyboard interrupt. Exiting...")

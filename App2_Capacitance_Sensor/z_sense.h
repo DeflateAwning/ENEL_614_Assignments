@@ -36,10 +36,6 @@
 
 void init_ctmu(int8_t current_value_exponent);
 
-void r_sense_and_log(
-    int8_t current_value_exponent,
-    uint32_t resistance_ohms,
-    uint16_t sample_count);
 
 // uint32_t c_sense_2_point_delta_pF_v1();
 uint32_t c_sense_2_point_delta_pF();

@@ -63,18 +63,25 @@ int main(void) {
     
     
     while (1) {
-        Disp2String("DEBUG: Top of while(1)\n");
+        Disp2String("\n");
         
         // r_sense_and_log(0, 100000L, 100);
         // r_sense_and_log(0, 91000, 100);
         // r_sense_and_log(1, 10000, 100);
         
         // c_sense_2_point_delta_pF_v1(); // old demo function
-        uint32_t c_pF = c_sense_2_point_delta_pF();
+
+        // classic "average out the noise" method
+        uint8_t avg_count = 3;
+        uint64_t c_pF_sum = 0;
+        for (uint8_t i = 0; i < avg_count; i++) {
+            c_pF_sum += (uint64_t) c_sense_2_point_delta_pF();
+        }
+        const uint32_t c_pF = c_pF_sum / avg_count;
 
         // report the capacitance for Python to read
-        char msg[50];
-        sprintf(msg, "REPORT_CAP_pF=%lu\n", c_pF);
+        char msg[40];
+        sprintf(msg, "    REPORT_CAP_pF=%lu\n", c_pF);
         Disp2String(msg);
         
         // LATBbits.LATB8 = 1; // turn LED on

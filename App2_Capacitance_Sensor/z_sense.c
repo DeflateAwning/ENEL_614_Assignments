@@ -24,6 +24,8 @@
 #define F_to_uF(cap_F) ((cap_F) * 1000000.0)
 #define uF_to_F(cap_uF) ((cap_uF) / 1000000.0)
 
+const uint8_t enable_debug = 0;
+
 const uint32_t FAKE_CAPACITANCE_TO_INDICATE_OVER_RANGE = 0xFFFFFFFF - 6;
 
 // Arg current_value_exponent:
@@ -165,10 +167,9 @@ uint32_t c_sense_2_point_delta_pF_configurable(
     init_adc(); // must re-init after disable_ctmu_and_pull_pin_low()
 
     // while it's pulled to ground, wait for it to discharge
-    uint32_t discharge_time_occupied_ms;
-    for (discharge_time_occupied_ms = 0;
-            discharge_time_occupied_ms < 100;
-            discharge_time_occupied_ms++) {
+    uint32_t discharge_time_occupied_ms = 3; // start with this as a minimum
+    delay32_ms(discharge_time_occupied_ms);
+    for (; discharge_time_occupied_ms < 100; discharge_time_occupied_ms++) {
         if (read_adc_value() < 10) {
             break;
         }
@@ -192,7 +193,7 @@ uint32_t c_sense_2_point_delta_pF_configurable(
     
     const int32_t delta_mV = end_adc_val_mV - start_adc_val_mV;
     uint32_t cap_pF;
-    if (delta_mV <= 10) { // require at least 10 mV for it to be "valid"
+    if (delta_mV <= 5) { // require at least this many mV for it to be "valid"
         // cannot have 0 in the denom, so early return
         // Disp2String("DEBUG: delta_mV<=0, so can't divide\n");
         cap_pF = FAKE_CAPACITANCE_TO_INDICATE_OVER_RANGE;
@@ -204,12 +205,13 @@ uint32_t c_sense_2_point_delta_pF_configurable(
     }
 
     char msg[150];
-    sprintf(msg, "DEBUG (deep): discharge_time=%lums, pre_ctmu_adc=%d=%lumV, start_adc=%d=%lumV, end_adc=%d=%lumV, delta_mV=%lu, cap=%lup=%lun=%luu\n",
+    sprintf(msg, "DEBUG (deep): discharge_time=%lums, charge_time=%dms, pre_ctmu_adc=%d=%lumV, start_adc=%d=%lumV, end_adc=%d=%lumV, delta_mV=%ld, cap=%lup=%lun=%luu\n",
             
             // extra_adc_val_0=%d=%dmV,
             // extra_adc_val_0, adc_val_to_mV(extra_adc_val_0),
             
             discharge_time_occupied_ms,
+            charge_time_ms,
             pre_ctmu_adc_val, pre_ctmu_adc_val_mV,
             start_adc_val, start_adc_val_mV,
             end_adc_val, end_adc_val_mV,
@@ -218,14 +220,16 @@ uint32_t c_sense_2_point_delta_pF_configurable(
             ((uint32_t) (cap_pF / 1000)),
             ((uint32_t) (cap_pF / 1000000))
         );
-    Disp2String(msg);
+    if (enable_debug) {
+        Disp2String(msg);
+    }
     return cap_pF;
 }
 
 uint32_t c_sense_2_point_delta_pF() {
     // start around good for 1nF, and then adjust up or down
     int8_t ctmu_exp_val = 0;
-    uint16_t charge_time_ms = 10;
+    uint16_t charge_time_ms = 16;
     
     uint32_t cap_pF = 0;
     uint8_t retry_num = 0;
@@ -244,7 +248,9 @@ uint32_t c_sense_2_point_delta_pF() {
             ((uint32_t) (cap_pF / 1000000)),
             ctmu_exp_val, charge_time_ms
         );
-        Disp2String(msg);
+        if (enable_debug) {
+            Disp2String(msg);
+        }
 
         if (cap_pF == FAKE_CAPACITANCE_TO_INDICATE_OVER_RANGE) {
             // try again with a higher current, if we can
@@ -252,7 +258,7 @@ uint32_t c_sense_2_point_delta_pF() {
             if (ctmu_exp_val < 1) {
                 ctmu_exp_val++;
             }
-            else if (charge_time_ms < 100) {
+            else if ((charge_time_ms*2) < 1000) {
                 charge_time_ms *= 2;
             }
             else {
@@ -265,7 +271,7 @@ uint32_t c_sense_2_point_delta_pF() {
             if (ctmu_exp_val > -1) {
                 ctmu_exp_val--;
             }
-            else if (charge_time_ms > 1) {
+            else if ((charge_time_ms/2) > 1) {
                 charge_time_ms /= 2;
             }
             else {
@@ -279,36 +285,3 @@ uint32_t c_sense_2_point_delta_pF() {
     }
     return cap_pF;
 }
-
-
-void r_sense_and_log(int8_t current_value_exponent, uint32_t resistance_ohms, uint16_t sample_count) {
-    init_ctmu(current_value_exponent);
-    
-    double current_source_value_uA = 0; //  = pow(5.5, current_value_exponent);
-    if (current_value_exponent == -1) {
-        current_source_value_uA = 0.55;
-    }
-    else if (current_value_exponent == 0) {
-        current_source_value_uA = 5.5;
-    }
-    else if (current_value_exponent == 1) {
-        current_source_value_uA = 55.0;
-    }
-    
-    for (uint16_t i = 0; i < sample_count; i++) {
-        char msg[255];
-        
-        // read the ADC value
-        // Disp2String("Start read_adc_value");
-        const uint16_t adc_value = read_adc_value();
-        // Disp2String("Done read_adc_value");
-        const double adc_v = adc_value * 3.3 / 1023.0;
-        const double current_read_value_uA = (adc_v / ((double)(resistance_ohms))) * 1000000.0;
-        
-        sprintf(msg, "current_source_value_uA=%f, R=%ld, adc_value=%d, adc_volts=%3f, current_read_value_uA=%3f\n",
-                current_source_value_uA, resistance_ohms, adc_value, adc_v, current_read_value_uA);
-        
-        Disp2String(msg);
-    }
-}
-
